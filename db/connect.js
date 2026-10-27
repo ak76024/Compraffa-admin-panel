@@ -2,22 +2,24 @@ import mongoose from "mongoose";
 
 let isConnected = false;
 
-const connectToDB = async () => {
+export const connectToDB = async () => {
   mongoose.set("strictQuery", true);
 
-  if (isConnected) {
+  if (isConnected && mongoose.connection.readyState === 1) {
     return;
   }
 
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       dbName: "admin-panel",
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     });
 
     isConnected = conn.connection.readyState === 1;
+
+    console.log("MongoDB connected successfully!");
   } catch (error) {
-    console.log(error);
+    isConnected = false;
+    console.error("MongoDB connection failed:", error);
+    throw error;
   }
-}
+};

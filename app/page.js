@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,11 +11,13 @@ export default function Home() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  function handleLogin(e) {
+  async function handleLogin(e) {
     e.preventDefault();
     setError("");
 
+    try{
     if (!email.trim() || !password) {
       setError("Please enter your email and password.");
       return;
@@ -24,13 +28,30 @@ export default function Home() {
       return;
     }
 
-    setLoading(true);
+    let response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-    // TODO: Connect your backend authentication API here.
-    setTimeout(() => {
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Something went wrong.");
+      toast.error(data.message || "Something went wrong.");
+    }else{
+      toast.success("Login successful");
+      router.push("/dashboard");
+    }
+    setLoading(true);
+  } catch (error) {
+    console.error("Login error:", error);
+    setError("Invalid email or password.");
+    }finally{
       setLoading(false);
-      setError("Authentication API is not connected yet.");
-    }, 700);
+    }
   }
 
   return (

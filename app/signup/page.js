@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function Signup() {
   const [name, setName] = useState("");
@@ -14,11 +15,13 @@ export default function Signup() {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   async function handleSignup(e) {
     let loadingToast = toast.loading("Creating account...")
     e.preventDefault();
     setError("");
+    try {
 
     if (!name.trim() || !email.trim() || !password || !confirmPassword) {
       setError("Please fill in all fields.");
@@ -30,10 +33,10 @@ export default function Signup() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.");
-      return;
-    }
+    // if (password.length < 8) {
+    //   setError("Password must contain at least 8 characters.");
+    //   return;
+    // }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -47,8 +50,7 @@ export default function Signup() {
 
     setLoading(true);
 
-    try {
-      const response = await fetch("./api", {
+      const response = await fetch("/api/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,6 +61,9 @@ export default function Signup() {
       if (!response.ok) {
         throw new Error(data.message || "Something went wrong.");
         toast.error(data.message || "Something went wrong.");
+      }else{
+        toast.success("Signup successful");
+        router.push("/");
       }
     } catch (err) {
       setError(err.message);
